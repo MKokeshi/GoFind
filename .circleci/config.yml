@@ -1,0 +1,30 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: circleci/golang:1.12
+
+    steps:
+      - checkout
+      - run:
+          name: log Go version
+          command: go version
+      - run:
+          name: get goveralls
+          command: go get github.com/mattn/goveralls
+      - run:
+          name: set GOPATH
+          command: |
+            echo 'export GOPATH=/home/circleci/project' >> $BASH_ENV
+      - run:
+          name: test and generate coverage
+          command: go test ./... -v -cover -race -coverprofile=./coverage.out
+      - run:
+          name: upload coverage to coveralls
+          command: goveralls -coverprofile=./coverage.out -service=circle-ci -repotoken=$COVERALLS_TOKEN
+
+workflows:
+  version: 2
+  build-workflow:
+    jobs:
+      - build
